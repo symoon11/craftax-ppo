@@ -90,10 +90,11 @@ class DownStack(nnx.Module):
             x = block(x)
         return x
 
-    def output_shape(self, in_shape: Sequence[int]) -> Sequence[int]:
+    def out_shape(self, in_shape: Sequence[int]) -> Sequence[int]:
         h, w, c = in_shape
         assert c == self.in_chan
-        return ((h + 1) // 2, (w + 1) // 2, self.out_chan)
+        out_shape = ((h + 1) // 2, (w + 1) // 2, self.out_chan)
+        return out_shape
 
 
 class ImpalaCNN(nnx.Module):
@@ -122,7 +123,7 @@ class ImpalaCNN(nnx.Module):
                 rngs=rngs,
             )
             self.stacks.append(stack)
-            in_shape = stack.output_shape(in_shape)
+            in_shape = stack.out_shape(in_shape)
         in_size = math.prod(in_shape)
         self.dense = Linear(
             in_size,

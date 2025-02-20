@@ -45,7 +45,7 @@ class ResidualRecurrentBlock(nnx.Module):
     ) -> Tuple[ArrayLike, ArrayLike]:
         residual = x
         x = self.norm(x)
-        # TODO: initialize carry
+        carry = first * self.cell.initialize_carry(x.shape) + (1 - first) * carry
         carry, x = self.cell(carry, x)
         x = x + residual
         residual = x
