@@ -1,14 +1,15 @@
+from typing import Sequence
+
 import flax.linen as nn
 import jax.numpy as jnp
 from chex import Array
-
 from flax.linen.initializers import variance_scaling
 
 
 class BaseLayer(nn.Module):
     out_size: int
-    act_type: str = "relu"
     norm_type: str = "layer"
+    act_type: str = "relu"
     scale: float = 1.0
 
     def setup(self):
@@ -48,15 +49,16 @@ class BaseLayer(nn.Module):
         return x
 
 
-class Linear(BaseLayer):
+class Dense(BaseLayer):
     def setup(self):
         super().setup()
         self.layer = nn.Dense(self.out_size, **self.layer_kwargs)
 
 
-class Conv2d(BaseLayer):
-    kernel_size: int = 3
-    strides: int = 1
+class Conv(BaseLayer):
+    kernel_size: Sequence[int] = (3, 3)
+    strides: Sequence[int] = (1, 1)
+    padding: str = "SAME"
 
     def setup(self):
         super().setup()
@@ -64,5 +66,6 @@ class Conv2d(BaseLayer):
             self.out_size,
             self.kernel_size,
             strides=self.strides,
+            padding=self.padding,
             **self.layer_kwargs,
         )
