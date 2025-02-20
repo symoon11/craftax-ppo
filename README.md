@@ -1,1 +1,1 @@
-# crafter-ppo
+# Scaling PPO on Craftax
