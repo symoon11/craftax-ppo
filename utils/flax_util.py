@@ -24,7 +24,9 @@ class BaseLayer(nnx.Module):
             raise NotImplementedError(norm_type)
         use_bias = self.norm is None
         kernel_init = nnx.nn.initializers.variance_scaling(
-            scale, "fan_in", "truncated_normal", dtype=dtype
+            scale,
+            "fan_in",
+            "truncated_normal",
         )
         self.layer = None
         self.layer_kwargs = {

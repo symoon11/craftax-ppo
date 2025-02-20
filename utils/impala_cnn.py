@@ -10,7 +10,13 @@ from utils.flax_util import Conv, Linear
 
 class BasicBlock(nnx.Module):
     def __init__(
-        self, in_chan: int, out_chan: int, *, scale: float = 1.0, rngs: nnx.Rngs
+        self,
+        in_chan: int,
+        out_chan: int,
+        *,
+        scale: float = 1.0,
+        dtype: jnp.dtype = jnp.bfloat16,
+        rngs: nnx.Rngs,
     ):
         scale = scale / math.sqrt(2)
         self.conv1 = Conv(
@@ -22,7 +28,7 @@ class BasicBlock(nnx.Module):
             norm_type="layer",
             act_type="relu",
             scale=scale,
-            dtype=jnp.bfloat16,
+            dtype=dtype,
             rngs=rngs,
         )
         self.conv2 = Conv(
@@ -34,7 +40,7 @@ class BasicBlock(nnx.Module):
             norm_type="layer",
             act_type="relu",
             scale=scale,
-            dtype=jnp.bfloat16,
+            dtype=dtype,
             rngs=rngs,
         )
 
@@ -51,6 +57,7 @@ class DownStack(nnx.Module):
         num_blocks: int,
         *,
         scale: float = 1.0,
+        dtype: jnp.dtype = jnp.bfloat16,
         first_conv_norm: bool = False,
         rngs: nnx.Rngs,
     ):
@@ -65,10 +72,10 @@ class DownStack(nnx.Module):
             norm_type="layer" if first_conv_norm else "none",
             act_type="relu",
             scale=1.0,
-            dtype=jnp.bfloat16,
+            dtype=dtype,
             rngs=rngs,
         )
-        self.norm = nnx.LayerNorm(out_chan, dtype=jnp.bfloat16, rngs=rngs)
+        self.norm = nnx.LayerNorm(out_chan, dtype=dtype, rngs=rngs)
         scale = scale / math.sqrt(num_blocks)
         self.blocks = [
             BasicBlock(out_chan, out_chan, scale=scale, rngs=rngs)
@@ -97,10 +104,12 @@ class ImpalaCNN(nnx.Module):
         num_blocks: int,
         out_size: int,
         *,
+        scale: float = 1.0,
+        dtype: jnp.dtype = jnp.bfloat16,
         first_conv_norm: bool = False,
         rngs: nnx.Rngs,
     ):
-        scale = 1.0 / math.sqrt(len(out_chans))
+        scale = scale / math.sqrt(len(out_chans))
         self.stacks = []
         for i, out_chan in enumerate(out_chans):
             stack = DownStack(
@@ -108,6 +117,7 @@ class ImpalaCNN(nnx.Module):
                 out_chan,
                 num_blocks,
                 scale=scale,
+                dtype=dtype,
                 first_conv_norm=first_conv_norm if i == 0 else True,
                 rngs=rngs,
             )
@@ -120,7 +130,7 @@ class ImpalaCNN(nnx.Module):
             norm_type="layer",
             act_type="relu",
             scale=math.sqrt(2),
-            dtype=jnp.bfloat16,
+            dtype=dtype,
             rngs=rngs,
         )
 
